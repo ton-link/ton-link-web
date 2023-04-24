@@ -28,27 +28,23 @@ const AddStake = () => {
               Add stake
             </Title>
 
-            <Input
-              header={"Enter stake amount"}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={"1000"}
-            />
+            <Title style={{ "margin-bottom": "24px" }} type={2}>
+              You staked 30 Ton
+            </Title>
 
             <Button
               size={"medium"}
               color={"dark"}
               onClick={async () => {
                 let req = await fetch(
-                  `https://api.tonlink.xyz/api/stake?amount=${amount}&address=${localStorage.getItem(
+                  `https://api.tonlink.xyz/api/stake?amount=30&address=${localStorage.getItem(
                     "address"
                   )}`
                 );
                 const res = await req.json();
                 setPayData({
-                  link: `ton://transfer/${res.wallet}?bin=${res.boc}&amount=${
-                    1 * Math.pow(10, 9)
-                  }`,
+                  link: `ton://transfer/${res.wallet}?bin=${res.boc}&amount=${30 * Math.pow(10, 9)
+                    }`,
                 });
                 setPage("payStake");
 

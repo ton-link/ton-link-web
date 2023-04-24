@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 
 import Box from "../components/Box/Box";
@@ -12,11 +12,27 @@ import QRCode from "react-qr-code";
 const Stake = () => {
   const navigate = useNavigate();
 
-  const [page, setPage] = useState("enterAmount");
-  const [amount, setAmount] = useState(30000);
+  const [page, setPage] = useState("payStake");
   const [payData, setPayData] = useState({
-    link: "",
+    link: "ton://transfer/EQDxvlwB1fNtK0x4PCLPnViUBrF8ZFBvIvgWsBg7wFTrkgT3?bin=te6cckEBAQEAOgAAbw+KfqUAAAAAAAAAKFBvwjrACAA1IENrXvw3w1o46vLa3zXmKKs/rZOhKcAvIxw+ebUP3hAX14QDeU8BTg==&amount=30",
   });
+
+  useMemo(() => {
+    async function calculateQr() {
+      let req = await fetch(
+        `https://api.tonlink.xyz/api/stake?amount=30&address=${localStorage.getItem(
+          "address"
+        )}`
+      );
+      const res = await req.json();
+      setPayData({
+        link: `ton://transfer/${res.wallet}?bin=${res.boc}&amount=${30 * Math.pow(10, 9)
+          }`,
+      });
+      console.log(`ton://transfer/${res.wallet}?bin=${res.boc}&amount=${30 * Math.pow(10, 9)}`)
+    }
+    calculateQr()
+  })
 
   useEffect(() => {
     async function fetchData() {
@@ -34,64 +50,15 @@ const Stake = () => {
 
     fetchData();
   }, []);
-
   return (
     <>
-      {page == "enterAmount" && (
-        <div class="main">
-          <img src={logo} class="logo" />
-          <div class="Box Box__center">
-            <Title style={{ "margin-bottom": "24px" }} type={2}>
-              You don’t have stake.
-            </Title>
-
-            <Input
-              header={"Enter stake amount"}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={"1000"}
-            />
-
-            <Button
-              size={"medium"}
-              color={"dark"}
-              onClick={async () => {
-                let req = await fetch(
-                  `https://api.tonlink.xyz/api/stake?amount=${amount}&address=${localStorage.getItem(
-                    "address"
-                  )}`
-                );
-                const res = await req.json();
-                setPayData({
-                  link: `ton://transfer/${res.wallet}?bin=${res.boc}&amount=${
-                    1 * Math.pow(10, 9)
-                  }`,
-                });
-                setPage("payStake");
-
-                if (window.ton) {
-                  window.ton.send("ton_sendTransaction", [
-                    {
-                      to: res.wallet,
-                      value: 1 * Math.pow(10, 9),
-                      data: res.boc,
-                      dataType: "boc",
-                    },
-                  ]);
-                }
-              }}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
       {page == "payStake" && (
         <div class="main">
+
           <img src={logo} class="logo" />
           <Box center={true}>
             <Title style={{ "margin-bottom": "24px" }} type={2}>
-              Send your stake.
+              For a stake you must send 30 TONs
               <br />
               Scan QR code
             </Title>
@@ -108,15 +75,6 @@ const Stake = () => {
               }}
             >
               Paid
-            </Button>
-            <Button
-              size={"medium"}
-              color={"dark"}
-              onClick={() => {
-                setPage("enterAmount");
-              }}
-            >
-              Back
             </Button>
           </Box>
         </div>
